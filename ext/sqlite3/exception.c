@@ -11,6 +11,7 @@ void rb_sqlite3_raise(sqlite3 * db, int status)
       return;
       break;
     case SQLITE_ERROR:
+      printf("TESTING CHECK: we have generated an SQLException\n");
       klass = rb_path2class("SQLite3::SQLException");
       break;
     case SQLITE_INTERNAL:

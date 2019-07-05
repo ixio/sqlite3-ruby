@@ -22,6 +22,23 @@ static VALUE allocate(VALUE klass)
   return Data_Wrap_Struct(klass, NULL, deallocate, ctx);
 }
 
+
+int trace_callback_stmt(unsigned uMask, void* context, void* p, void* x)
+{
+  printf("TESTING TRACE_STMT\n", (char *) sqlite3_expanded_sql(p));
+}
+int trace_callback_profile(unsigned uMask, void* context, void* p, void* x)
+{
+  printf("TESTING TRACE_PROFILE\n");
+}
+int trace_callback_row(unsigned uMask, void* context, void* p, void* x)
+{
+  printf("TESTING TRACE_ROW\n");
+}
+int trace_callback_close(unsigned uMask, void* context, void* p, void* x)
+{
+  printf("TESTING TRACE_CLOSE\n");
+}
 /* call-seq: SQLite3::Statement.new(db, sql)
  *
  * Create a new statement attached to the given Database instance, and which
@@ -31,7 +48,6 @@ static VALUE allocate(VALUE klass)
  */
 static VALUE initialize(VALUE self, VALUE db, VALUE sql)
 {
-  printf("TESTING TEST1");
   sqlite3RubyPtr db_ctx;
   sqlite3StmtRubyPtr ctx;
   const char *tail = NULL;
@@ -48,12 +64,34 @@ static VALUE initialize(VALUE self, VALUE db, VALUE sql)
   if(!UTF8_P(sql)) {
     sql               = rb_str_export_to_enc(sql, rb_utf8_encoding());
   }
-
+  sqlite3_trace_v2(
+    db_ctx->db,
+    0x01,
+    trace_callback_stmt,
+    ctx
+  );
+  sqlite3_trace_v2(
+    db_ctx->db,
+    0x02,
+    trace_callback_profile,
+    ctx
+  );
+  sqlite3_trace_v2(
+    db_ctx->db,
+    0x04,
+    trace_callback_row,
+    ctx
+  );
+  sqlite3_trace_v2(
+    db_ctx->db,
+    0x08,
+    trace_callback_close,
+    ctx
+  );
+  printf("TESTING STMT-PREPARE: %s\n", (char *) StringValuePtr(sql));
 #ifdef HAVE_SQLITE3_PREPARE_V2
-  printf("TESTING TEST2 sqlite3_prepare_v2");
   status = sqlite3_prepare_v2(
 #else
-  printf("TESTING TEST2 sqlite3_prepare");
   status = sqlite3_prepare(
 #endif
       db_ctx->db,
@@ -62,6 +100,7 @@ static VALUE initialize(VALUE self, VALUE db, VALUE sql)
       &ctx->st,
       &tail
   );
+  printf("TESTING END STMT-PREPARE\n");
 
   CHECK(db_ctx->db, status);
 
