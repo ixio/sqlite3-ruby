@@ -31,6 +31,7 @@ static VALUE allocate(VALUE klass)
  */
 static VALUE initialize(VALUE self, VALUE db, VALUE sql)
 {
+  printf("TESTING TEST1");
   sqlite3RubyPtr db_ctx;
   sqlite3StmtRubyPtr ctx;
   const char *tail = NULL;
@@ -49,10 +50,10 @@ static VALUE initialize(VALUE self, VALUE db, VALUE sql)
   }
 
 #ifdef HAVE_SQLITE3_PREPARE_V2
-  printf("TESTING TEST sqlite3_prepare_v2");
+  printf("TESTING TEST2 sqlite3_prepare_v2");
   status = sqlite3_prepare_v2(
 #else
-  printf("TESTING TEST sqlite3_prepare");
+  printf("TESTING TEST2 sqlite3_prepare");
   status = sqlite3_prepare(
 #endif
       db_ctx->db,
