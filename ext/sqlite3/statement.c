@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <sqlite3_ruby.h>
 
 #define REQUIRE_OPEN_STMT(_ctxt) \
@@ -48,8 +49,10 @@ static VALUE initialize(VALUE self, VALUE db, VALUE sql)
   }
 
 #ifdef HAVE_SQLITE3_PREPARE_V2
+  printf("TESTING TEST sqlite3_prepare_v2");
   status = sqlite3_prepare_v2(
 #else
+  printf("TESTING TEST sqlite3_prepare");
   status = sqlite3_prepare(
 #endif
       db_ctx->db,
