@@ -23,21 +23,20 @@ static VALUE allocate(VALUE klass)
 }
 
 
-int trace_callback_stmt(unsigned uMask, void* context, void* p, void* x)
+int trace_callback(unsigned uMask, void* context, void* p, void* x)
 {
-  printf("TESTING TRACE_STMT\n", (char *) sqlite3_expanded_sql(p));
-}
-int trace_callback_profile(unsigned uMask, void* context, void* p, void* x)
-{
-  printf("TESTING TRACE_PROFILE\n");
-}
-int trace_callback_row(unsigned uMask, void* context, void* p, void* x)
-{
-  printf("TESTING TRACE_ROW\n");
-}
-int trace_callback_close(unsigned uMask, void* context, void* p, void* x)
-{
-  printf("TESTING TRACE_CLOSE\n");
+  if(uMask == 0x01) {
+    printf("TESTING TRACE_STMT %s\n", (char *) sqlite3_expanded_sql(p));
+  }
+  else if(uMask == 0x02) {
+    printf("TESTING TRACE_PROFILE\n");
+  }
+  else if(uMask == 0x04) {
+    printf("TESTING TRACE_ROW\n");
+  }
+  else if(uMask == 0x08) {
+    printf("TESTING TRACE_CLOSE\n");
+  }
 }
 /* call-seq: SQLite3::Statement.new(db, sql)
  *
@@ -66,26 +65,8 @@ static VALUE initialize(VALUE self, VALUE db, VALUE sql)
   }
   sqlite3_trace_v2(
     db_ctx->db,
-    0x01,
-    trace_callback_stmt,
-    ctx
-  );
-  sqlite3_trace_v2(
-    db_ctx->db,
-    0x02,
-    trace_callback_profile,
-    ctx
-  );
-  sqlite3_trace_v2(
-    db_ctx->db,
-    0x04,
-    trace_callback_row,
-    ctx
-  );
-  sqlite3_trace_v2(
-    db_ctx->db,
-    0x08,
-    trace_callback_close,
+    0x01|0x02|0x04|0x08,
+    trace_callback,
     ctx
   );
   printf("TESTING STMT-PREPARE: %s\n", (char *) StringValuePtr(sql));
